@@ -1,15 +1,32 @@
+import logging
 import os
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 import requests
 import re
 
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
 token = os.environ['TOKEN']
+
+
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    update.message.reply_text('Hi!')
 
 
 def get_url():
     contents = requests.get('https://random.dog/woof.json').json()    
     url = contents['url']
     return url
+
+
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
 def bop(bot, update):
@@ -26,10 +43,11 @@ def hello(bot, update):
 
 
 def main():
-    updater = Updater(token)
+    updater = Updater(token, use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('bop', bop))
     dp.add_handler(CommandHandler('hello', hello))
+    dp.add_handler(CommandHandler("start", start))
 
     updater.start_polling()
     updater.idle()
