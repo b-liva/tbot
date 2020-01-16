@@ -11,7 +11,7 @@ import os
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
-
+from .config import base_url
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,22 +33,22 @@ def start(update, context):
 def button(update, context):
     query = update.callback_query
     if query.data == str(1):
-        response = requests.get('http://68.183.215.213:8002/cloud/get-all-dns')
+        response = requests.get(f'{base_url}cloud/get-all-dns')
         ips = response.json()
         text = str()
         for ip in ips['dnses']:
             text += f"{ip['Value']}\n"
         query.edit_message_text(text=f"ips: \n {text}")
     if query.data == str(2):
-        response = requests.get('http://68.183.215.213:8002/cloud/get-all-servers')
+        response = requests.get(f'{base_url}cloud/get-all-servers')
         drops = response.json()
         text = str()
         for drop in drops:
             text += f"{drop}\n"
         query.edit_message_text(text=f"{text}")
     if query.data == str(3):
-        dnses = requests.get('http://68.183.215.213:8002/cloud/get-all-dns')
-        servers = requests.get('http://68.183.215.213:8002/cloud/get-all-servers')
+        dnses = requests.get(f'{base_url}cloud/get-all-dns')
+        servers = requests.get(f'{base_url}cloud/get-all-servers')
         dns_ips = [dns['Value'] for dns in dnses.json()['dnses']]
         server_ips = [server['ip'] for server in servers.json()]
         diff = list(set(server_ips) - set(dns_ips))
@@ -68,7 +68,7 @@ def add_ip_to_dns(update, context):
     chat_id = update.message.chat_id
     print(chat_id)
     print(context.args)
-    url = 'http://68.183.215.213:8002/cloud/change-dns'
+    url = f'{base_url}cloud/change-dns'
     data = {
         'action': 'add',
         'new_ip': context.args[0]
